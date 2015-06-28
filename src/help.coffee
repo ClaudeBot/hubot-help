@@ -77,10 +77,10 @@ module.exports = (robot) ->
       cmds = renamedHelpCommands(robot).map (cmd) ->
         cmd.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
 
-    emit = "<p>#{cmds.join '</p><p>'}</p>"
+      emit = "<p>#{cmds.join '</p><p>'}</p>"
 
-    emit = emit.replace new RegExp("#{robot.name}", "ig"), "<b>#{robot.name}</b>"
-    htmlCache = helpContents robot.name, emit
+      emit = emit.replace new RegExp("#{robot.name}", "ig"), "<b>#{robot.name}</b>"
+      htmlCache = helpContents robot.name, emit
 
     res.setHeader 'content-type', 'text/html'
     res.end htmlCache
