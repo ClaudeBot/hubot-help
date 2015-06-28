@@ -54,38 +54,39 @@ helpContents = (name, commands) ->
 
 module.exports = (robot) ->
   txtCache = null
+  htmlCache = null
+
   robot.respond /help\s*(.*)?$/i, (msg) ->
     if not txtCache?
-      cmds = robot.helpCommands()
+      cmds = renamedHelpCommands(robot)
       filter = msg.match[1]
 
-      if filter
-        cmds = cmds.filter (cmd) ->
-          cmd.match new RegExp(filter, 'i')
-        if cmds.length == 0
-          msg.send "No available commands match #{filter}"
-          return
+    if filter
+      cmds = cmds.filter (cmd) ->
+        cmd.match new RegExp(filter, 'i')
+      if cmds.length == 0
+        msg.send "No available commands match #{filter}"
+        return
 
-      prefix = robot.alias or robot.name
-      cmds = cmds.map (cmd) ->
-        cmd = cmd.replace /hubot/ig, robot.name
-        cmd.replace new RegExp("^#{robot.name}"), prefix
-
-      txtCache = cmds.join "\n"
+    txtCache = cmds.join "\n"
 
     msg.send txtCache
 
-  htmlCache = null
   robot.router.get "/#{robot.name}/help", (req, res) ->
     if not htmlCache?
-      cmds = robot.helpCommands().map (cmd) ->
+      cmds = renamedHelpCommands(robot).map (cmd) ->
         cmd.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
 
-      emit = "<p>#{cmds.join '</p><p>'}</p>"
+    emit = "<p>#{cmds.join '</p><p>'}</p>"
 
-      emit = emit.replace /hubot/ig, "<b>#{robot.name}</b>"
-
-      htmlCache = helpContents robot.name, emit
+    emit = emit.replace new RegExp("#{robot.name}", "ig"), "<b>#{robot.name}</b>"
+    htmlCache = helpContents robot.name, emit
 
     res.setHeader 'content-type', 'text/html'
     res.end htmlCache
+
+renamedHelpCommands = (robot) ->
+  robot_name = robot.alias or robot.name
+  help_commands = robot.helpCommands().map (command) ->
+    command.replace /hubot/ig, robot_name
+  help_commands.sort()
