@@ -73,6 +73,9 @@ module.exports = (robot) ->
     msg.send txtCache
 
   robot.router.get "/#{robot.name}/help", (req, res) ->
+    if process.env.HUBOT_HELP_DISABLE_HTTP?
+      return res.status(403).end("403 Access Denied / Forbidden")
+
     if not htmlCache?
       cmds = renamedHelpCommands(robot).map (cmd) ->
         cmd.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
